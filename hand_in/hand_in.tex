@@ -1,0 +1,72 @@
+\documentclass[a4paper,12pt]{article}
+
+\input{preamble}
+
+\begin{document}
+\begin{center}
+{\Huge{\textbf{Hand In 1 -- Regularlization}}}\\[0.4cm]
+{\large{\textsc{TIF345 -- Advanced Simulation and Machine Learning}}}\\
+{\large{\textsc{Chalmers University of Technology}}}\\[0.4cm]
+\textsc{Oscar Stommendal\footnote[2]{\href{mailto:oscarsto@chalmers.se}{\texttt{oscarsto@chalmers.se}}}, Fall 2025}\\
+\end{center}
+
+In this assignment, we consider an i.i.d. (independent and identically distributed) data likelihood with a linear model design matrix $\bm{\Phi}$ and parameters $\bm{\theta}$,
+\begin{equation}
+        p(\mathcal{D}_i|\bm{\theta}) \sim \mathcal{N}(\mathcal{D}_i|[\bm{\Phi}\bm{\theta}]_i, \sigma^2).
+\end{equation}
+\subsubsection*{Maximum a Posteriori Estimator with Gaussian Prior}
+In this case, we consider a Gaussian prior on the parameters $\bm{\theta}$,
+\begin{equation}
+    p(\bm{\theta}) \sim \Pi_{i=1}^{N_p} \mathcal{N}(\theta_i|0, \sigma_0^2).
+\end{equation}
+The maximum a posteriori (MAP) estimator is given by
+\begin{equation}\label{eq}
+    \bm{\theta}_{MAP} = \arg\max_{\bm{\theta}} p(\bm{\theta}|\mathcal{D}) = \arg\max_{\bm{\theta}} p(\mathcal{D}|\bm{\theta})p(\bm{\theta}).
+\end{equation}
+Here, we have used Bayes' theorem and dropped the evidence term $p(\mathcal{D})$ since it does not depend on $\bm{\theta}$. Taking the logarithm of Eq. \ref{eq}, we have
+\begin{equation} \label{eq2}
+    \bm{\theta}_{MAP} = \arg\max_{\bm{\theta}} \log p(\mathcal{D}|\bm{\theta}) + \log p(\bm{\theta}).
+\end{equation}
+For Gaussian distributions, i.e. the likelihood $p(\mathcal{D}|\bm{\theta})$ and the prior $p(\bm{\theta})$, we have that
+\begin{equation}
+    p(\bm{x}|\bm{\mu}) \sim \mathcal{N}(\bm{x}|\bm{\mu}, \sigma^2) = \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left(-\frac{(\bm{x}-\bm{\mu})^T(\bm{x}-\bm{\mu})}{2\sigma^2}\right),
+\end{equation}
+for i.i.d. data with variance $\sigma^2$. Applying this to the likelihood and prior, we have
+\begin{align}
+    &p(\mathcal{D}, \bm{\theta}) \sim \mathcal{N}(\mathcal{D}|\bm{\Phi}\bm{\theta}, \sigma^2) = \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left(-\frac{(\mathcal{D} - \bm{\Phi}\bm{\theta})^T(\mathcal{D} - \bm{\Phi}\bm{\theta})}{2\sigma^2}\right), \label{likeli}\\
+    &p(\bm{\theta}) \sim \Pi_{i=1}^{N_p} \mathcal{N}(\theta_i|0, \sigma_0^2) = \left(\frac{1}{\sqrt{2\pi\sigma_0^2}}\right)^{N_p} \exp\left(-\frac{1}{2\sigma_0^2} \sum_{i=1}^{N_p} \theta_i^2\right).
+\end{align}
+Taking the logarithm of these expressions, we have
+\begin{equation}
+    \bm{\theta}_{MAP} = \arg\max_{\bm{\theta}} \left[-\frac{1}{2\sigma^2} (\mathcal{D} - \bm{\Phi}\bm{\theta})^T(\mathcal{D} - \bm{\Phi}\bm{\theta}) - \frac{1}{2\sigma_0^2} \sum_{i=1}^{N_p} \theta_i^2 + C\right],
+\end{equation}
+where $C$ is a constant that does not depend on $\bm{\theta}$ coming from the normalization constants. Multiplying by $2\sigma^2$, dropping the constant term, and converting the maximization to a minimization by multiplying by $-1$, we have
+\begin{equation}
+    \bm{\theta}_{MAP} = \arg\min_{\bm{\theta}} \left[(\mathcal{D} - \bm{\Phi}\bm{\theta})^T(\mathcal{D} - \bm{\Phi}\bm{\theta}) + \frac{\sigma^2}{\sigma_0^2} \sum_{i=1}^{N_p} \theta_i^2\right].
+\end{equation}
+This is the Ridge regression estimator with regularization parameter $\lambda = \frac{\sigma^2}{\sigma_0^2}$. A large data variance $\sigma^2$ means that the data is noisy, and we should therefore trust it less, leading to a larger $\lambda$ (yielding smaller estimated parameters). Conversely, a large prior variance $\sigma_0^2$ means that we are less certain about our prior knowledge of $\bm{\theta}$, leading to a smaller $\lambda$, allowing larger estimated parameters. So, $\lambda$ can be interpreted as a penalty term that balances the fit to the data, influenced by our confidence in the data and prior.
+
+\subsubsection*{Maximum a Posteriori Estimator with Laplace Prior}
+Now, we instead consider a Laplace prior on the parameters $\bm{\theta}$,
+\begin{equation}
+    p(\bm{\theta}) \sim \Pi_{i=1}^{N_p} \mathcal{L}(\theta_i|0, \sigma_0) = \left(\frac{1}{2\sigma_0}\right)^{N_p} \exp\left(-\frac{1}{\sigma_0} \sum_{i=1}^{N_p} |\theta_i|\right).
+\end{equation}
+The MAP estimator is again given by Eq. \ref{eq2}. For the likelihood, we have the same expression as in Eq. \ref{likeli}. Taking the logarithm of the likelihood and prior, we have
+\begin{equation}
+    \bm{\theta}_{MAP} = \arg\max_{\bm{\theta}} \left[-\frac{1}{2\sigma^2} (\mathcal{D} - \bm{\Phi}\bm{\theta})^T(\mathcal{D} - \bm{\Phi}\bm{\theta}) - \frac{1}{\sigma_0} \sum_{i=1}^{N_p} |\theta_i| + C\right],
+\end{equation}
+where $C$ again is a constant that does not depend on $\bm{\theta}$. Following the steps as before: multiplying by $2\sigma^2$, dropping the constant term, and multiplying by $-1$, we have
+\begin{equation}
+    \bm{\theta}_{MAP} = \arg\min_{\bm{\theta}} \left[(\mathcal{D} - \bm{\Phi}\bm{\theta})^T(\mathcal{D} - \bm{\Phi}\bm{\theta}) + \frac{2\sigma^2}{\sigma_0} \sum_{i=1}^{N_p} |\theta_i|\right].
+\end{equation}
+This is the LASSO regression estimator with regularization parameter $\lambda = \frac{2\sigma^2}{\sigma_0}$. Similarly to the Ridge regression case, the regularization parameter can be interpreted as a penalty term that balances the fit to the data, influenced by our confidence in the data and prior knowledge. However, $\lambda$ now scales with $\sigma_0$ instead of $\sigma_0^2$, reflecting the different nature of the Laplace prior compared to the Gaussian prior. 
+
+\subsubsection*{Concluding Discussion}
+Considering our expressions for the maximum a posteriori estimators with Gaussian and Laplace priors, we see that these add regularization terms to the ordinary least squares minimization problem. When we have $\sigma_0^2 \to \infty$ or $\sigma_0 \to \infty$, the regularization terms vanish, and we recover the ordinary least squares estimator for the two respective cases.
+
+Regularization (or using priors) helps prevent a model from fitting the noise in the data \cite{MurelKavlakoglu_WhatIsRegularization_IBM}. By adding a penalty (the regularization term) to large coefficients, the method keeps the parameter estimates smaller and more stable. In the Bayesian view, this penalty comes directly from a prior belief that the parameters should not be too large. A Gaussian prior leads to Ridge regression, while a Laplace prior leads to LASSO. Overall, regularization can improve prediction when data are noisy or when there are many correlated or irrelevant features, and it makes the model easier to interpret.
+
+\subsubsection*{References}
+\printbibliography[heading=none]
+
+\end{document}

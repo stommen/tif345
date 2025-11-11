@@ -1,0 +1,3 @@
+[submodule "tif345_projects"]
+	path = tif345_projects
+	url = https://github.com/stommen/tif345_projects.git
